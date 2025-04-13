@@ -1,0 +1,39 @@
+name: Daily Fetch Remote JS Files
+
+on:
+  schedule:
+    - cron: "0 1 * * *"  # 每天 UTC 时间 1:00 自动运行
+  workflow_dispatch:     # 允许手动触发
+
+permissions:
+  contents: write        # 允许写入仓库
+
+jobs:
+  fetch-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download and save files
+        run: |
+          # 下载并保存各个文件
+          wget -O a.js "https://raw.githubusercontent.com/amclubs/am-cf-tunnel/refs/heads/main/_worker.src.js"
+          wget -O at.js "https://raw.githubusercontent.com/amclubs/am-cf-trojan/refs/heads/main/_worker.src.js"
+          wget -O y.js "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Vless_workers_pages/vless%E6%BA%90%E7%A0%81.js"
+          wget -O yt.js "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Trojan_workers_pages/trojan%E6%BA%90%E7%A0%81.js"
+          wget -O m.js "https://raw.githubusercontent.com/cmliu/edgetunnel/refs/heads/main/%E6%98%8E%E6%96%87%E6%BA%90%E7%A0%81.js"
+          wget -O p.js "https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/refs/heads/main/build/unobfuscated-worker.js"
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🔄 Daily update: Fetch remote JS files"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          file_pattern: |
+            a.js
+            at.js
+            y.js
+            yt.js
+            m.js
+            p.js
