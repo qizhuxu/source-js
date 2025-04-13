@@ -2,11 +2,11 @@ name: Daily Fetch Remote JS Files
 
 on:
   schedule:
-    - cron: "0 1 * * *"  # 每天 UTC 时间 1:00 自动运行
-  workflow_dispatch:     # 允许手动触发
+    - cron: "0 1 * * *"
+  workflow_dispatch:
 
 permissions:
-  contents: write        # 允许写入仓库
+  contents: write
 
 jobs:
   fetch-files:
@@ -17,23 +17,37 @@ jobs:
 
       - name: Download and save files
         run: |
-          # 下载并保存各个文件
-          wget -O a.js "https://raw.githubusercontent.com/amclubs/am-cf-tunnel/refs/heads/main/_worker.src.js"
-          wget -O at.js "https://raw.githubusercontent.com/amclubs/am-cf-trojan/refs/heads/main/_worker.src.js"
-          wget -O y.js "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Vless_workers_pages/vless%E6%BA%90%E7%A0%81.js"
-          wget -O yt.js "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Trojan_workers_pages/trojan%E6%BA%90%E7%A0%81.js"
-          wget -O m.js "https://raw.githubusercontent.com/cmliu/edgetunnel/refs/heads/main/%E6%98%8E%E6%96%87%E6%BA%90%E7%A0%81.js"
-          wget -O p.js "https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/refs/heads/main/build/unobfuscated-worker.js"
+          # 创建一个函数来下载文件并检查结果
+          download_file() {
+            local url="$1"
+            local output="$2"
+            echo "正在下载 $output 从 $url"
+            if wget -O "$output" "$url"; then
+              echo "✅ $output 下载成功"
+              echo "文件大小: $(wc -c < "$output") 字节"
+            else
+              echo "❌ $output 下载失败"
+              return 1
+            fi
+          }
+
+          # 下载文件并记录结果
+          download_file "https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.src.js" "a.js"
+          download_file "https://raw.githubusercontent.com/amclubs/am-cf-trojan/main/_worker.src.js" "at.js"
+          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/main/Vless_workers_pages/vless源码.js" "y.js"
+          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/main/Trojan_workers_pages/trojan源码.js" "yt.js"
+          download_file "https://raw.githubusercontent.com/cmliu/edgetunnel/main/明文源码.js" "m.js"
+          download_file "https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/main/build/unobfuscated-worker.js" "p.js"
+
+          # 列出所有下载的文件
+          echo "下载完成的文件列表："
+          ls -l *.js
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "🔄 Daily update: Fetch remote JS files"
-          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-          file_pattern: |
-            a.js
-            at.js
-            y.js
-            yt.js
-            m.js
-            p.js
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add *.js
+          git status
+          git commit -m "🔄 Daily update: Fetch remote JS files $(date +%Y-%m-%d)" || echo "没有文件需要提交"
+          git push
