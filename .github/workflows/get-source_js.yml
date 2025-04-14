@@ -34,10 +34,8 @@ jobs:
           # 下载文件并记录结果
           download_file "https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.src.js" "a.js"
           download_file "https://raw.githubusercontent.com/amclubs/am-cf-trojan/main/_worker.src.js" "at.js"
-          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/main/Vless_workers_pages/_worker.js" "y.js"
-          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/main/Trojan_workers_pages/_worker.js" "yt.js"
-          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Vless_workers_pages/vless%E6%BA%90%E7%A0%81.js" "g.js"
-          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Trojan_workers_pages/trojan%E6%BA%90%E7%A0%81.js" "gt.js"
+          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Vless_workers_pages/vless%E6%BA%90%E7%A0%81.js" "y.js"
+          download_file "https://raw.githubusercontent.com/yonggekkk/Cloudflare_vless_trojan/refs/heads/main/Trojan_workers_pages/trojan%E6%BA%90%E7%A0%81.js" "yt.js"
           download_file "https://raw.githubusercontent.com/cmliu/edgetunnel/main/明文源码.js" "m.js"
           download_file "https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/main/build/unobfuscated-worker.js" "p.js"
 
