@@ -39,6 +39,7 @@ jobs:
           download_file "https://raw.githubusercontent.com/cmliu/edgetunnel/main/明文源码.js" "m.js"
           # download_file "https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/main/build/unobfuscated-worker.js" "p.js"
           download_file $(curl -s https://api.github.com/repos/bia-pain-bache/BPB-Worker-Panel/releases/latest | grep -o "https://.*worker.js") "p.js"
+          download_file "https://raw.githubusercontent.com/6Kmfi6HP/EDtunnel/refs/heads/main/index.js" "k.js"
 
           # 列出所有下载的文件
           echo "下载完成的文件列表："
