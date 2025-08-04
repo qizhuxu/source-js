@@ -1,9 +1,9 @@
 /**
- * YouTube Channel: https://youtube.com/@am_clubs
- * Telegram Group: https://t.me/am_clubs
+ * YouTube Channel  : https://youtube.com/@am_clubs
+ * Telegram Group   : https://t.me/am_clubs
  * GitHub Repository: https://github.com/amclubs
- * Personal Blog: https://amclubs.blogspot.com
- * Personal Blog: https://amclubss.com
+ * Personal Blog 1  : https://amclubss.com
+ * Personal Blog 2  : https://amclubs.blogspot.com
  */
 
 // @ts-ignore
@@ -23,6 +23,10 @@ let proxyIPs = [
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let proxyPort = 443;
 let proxyIpTxt = atob('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FtY2x1YnMvYW0tY2YtdHVubmVsL21haW4vcHJveHlpcC50eHQ=');
+let proxyDomain = [
+	// 'chatgpt.com',
+	// 'twitch.tv'
+];
 
 // Setting the socks5 will ignore proxyIP
 // Example:  user:pass@host:port  or  host:port
@@ -48,12 +52,12 @@ let ipUrlCsv = [
 ];
 // Preferred addresses with optional TLS subscription
 let ipLocal = [
-	'visa.cn:443#youtube.com/@am_clubs AM科技(订阅频道观看教程)',
+	'wto.org:443#youtube.com/@am_clubs 数字套利(频道教程)AM科技',
 	'icook.hk#t.me/am_clubs TG群(加入解锁免费节点)',
 	'time.is#github.com/amclubs GitHub仓库(关注查看新功能)',
 	'127.0.0.1:1234#amclubss.com (博客)cfnat'
 ];
-let noTLS = 'false';
+let noTLS = false;
 let sl = 5;
 
 let tagName = atob('YW1jbHVicw==');
@@ -74,7 +78,7 @@ let fakeHostName;
 let subProtocol = 'https';
 let subConverter = atob('dXJsLnYxLm1r'); // Subscription conversion backend using Sheep's function
 let subConfig = atob('aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2FtY2x1YnMvQUNMNFNTUi9tYWluL0NsYXNoL2NvbmZpZy9BQ0w0U1NSX09ubGluZV9GdWxsX011bHRpTW9kZS5pbmk='); // Subscription profile
-let fileName = atob('QU0lRTclQTclOTElRTYlOEElODA='); //'AM%E7%A7%91%E6%8A%80';
+let fileName = atob('5pWw5a2X5aWX5Yip'); 
 let isBase64 = true;
 
 let botToken = '';
@@ -86,6 +90,16 @@ const httpPattern = /^http(s)?:\/\/.+/;
 
 const protTypeBase64 = 'ZG14bGMzTT0=';
 const protTypeBase64Tro = 'ZEhKdmFtRnU=';
+
+let dnsResolver = atob('aHR0cHM6Ly8xLjEuMS4xL2Rucy1xdWVyeQ==');
+let nat64Domain = [
+	// 'chatgpt.com',
+	// 'twitch.tv'
+];
+let nat64 = false;
+let hostRemark = false;
+
+const ENABLE_LOG = true; 
 
 if (!isValidUUID(userID)) {
 	throw new Error('uuid is invalid');
@@ -103,6 +117,7 @@ export default {
 			let {
 				UUID,
 				PROXYIP,
+				PROXYIP_DOM_URL_TXT,
 				SOCKS5,
 				DNS_RESOLVER_URL,
 				IP_LOCAL,
@@ -121,6 +136,9 @@ export default {
 				TG_ID,
 				//兼容
 				ADDRESSESAPI,
+				NAT64,
+				NAT64_DOM_URL_TXT,
+				HOST_REAMRK,
 			} = env;
 			const kvCheckResponse = await checkKVNamespaceBinding(env);
 			if (!kvCheckResponse) {
@@ -138,7 +156,6 @@ export default {
 					let ipUrlTxtAndCsv;
 					if (PROXYIP.endsWith('.csv')) {
 						ipUrlTxtAndCsv = await getIpUrlTxtAndCsv(noTLS, null, proxyIpTxt);
-
 					} else {
 						ipUrlTxtAndCsv = await getIpUrlTxtAndCsv(noTLS, proxyIpTxt, null);
 					}
@@ -155,9 +172,12 @@ export default {
 				const uniqueIpTxt = [...new Set([...updatedIps, ...proxyIPs])];
 				proxyIP = uniqueIpTxt[Math.floor(Math.random() * uniqueIpTxt.length)];
 			}
-			const [ip, port] = proxyIP.split(':');
-			proxyIP = ip;
-			proxyPort = port || proxyPort;
+			//proxyIP = await resolveProxyIP(PROXYIP, noTLS, proxyIPs);
+			if (proxyIP) {
+				const [ip, port] = proxyIP.split(':');
+				proxyIP = ip;
+				proxyPort = port || proxyPort;
+			}
 
 			socks5 = url.searchParams.get('SOCKS5') || SOCKS5 || socks5;
 			parsedSocks5 = await parseSocks5FromUrl(socks5, url);
@@ -214,13 +234,27 @@ export default {
 				protType = protType.toLowerCase();
 			}
 			randomNum = url.searchParams.get('RANDOW_NUM') || randomNum;
+			hostRemark = url.searchParams.get('HOST_REAMRK') || HOST_REAMRK || hostRemark;
+
+			nat64 = url.searchParams.get('NAT64') || NAT64 || nat64;
+			NAT64_DOM_URL_TXT = url.searchParams.get('NAT64_DOM_URL_TXT') || NAT64_DOM_URL_TXT;
+			if (NAT64_DOM_URL_TXT) {
+				let nat64DomainTxt = await addIpText(NAT64_DOM_URL_TXT);
+				let nat64DomainAll = await getIpUrlTxtAndCsv(noTLS, nat64DomainTxt, null);
+				nat64Domain = [...new Set([...nat64DomainAll.txt])];
+			}
+			PROXYIP_DOM_URL_TXT = url.searchParams.get('PROXYIP_DOM_URL_TXT') || PROXYIP_DOM_URL_TXT;
+			if (PROXYIP_DOM_URL_TXT) {
+				let proxyDomainTxt = await addIpText(PROXYIP_DOM_URL_TXT);
+				let proxyDomainAll = await getIpUrlTxtAndCsv(noTLS, proxyDomainTxt, null);
+				proxyDomain = [...new Set([...proxyDomainAll.txt])];
+			}
 
 			// Unified protocol for handling subconverters
 			const [subProtocol, subConverterWithoutProtocol] = (subConverter.startsWith("http://") || subConverter.startsWith("https://"))
 				? subConverter.split("://")
 				: [undefined, subConverter];
 			subConverter = subConverterWithoutProtocol;
-
 			// console.log(`proxyIPs: ${proxyIPs} \n proxyIP: ${proxyIP} \n ipLocal: ${ipLocal} \n ipUrl: ${ipUrl} \n ipUrlTxt: ${ipUrlTxt} `);
 
 			//const uuid = url.searchParams.get('uuid')?.toLowerCase() || 'null';
@@ -240,8 +274,8 @@ export default {
 
 			fakeUserID = await getFakeUserID(userID);
 			fakeHostName = fakeUserID.slice(6, 9) + "." + fakeUserID.slice(13, 19);
-			console.log(`userID: ${userID}`);
-			console.log(`fakeUserID: ${fakeUserID}`);
+			//console.log(`userID: ${userID}`);
+			//console.log(`fakeUserID: ${fakeUserID}`);
 
 			// Handle routes based on the path
 			switch (url.pathname.toLowerCase()) {
@@ -256,7 +290,7 @@ export default {
 
 				case `/${fakeUserID}`: {
 					// Disguise UUID node generation
-					const fakeConfig = await getchannelConfig(userID, host, 'CF-FAKE-UA', url, protType);
+					const fakeConfig = await getchannelConfig(userID, host, 'CF-FAKE-UA', url, protType, nat64, hostRemark);
 					return new Response(fakeConfig, { status: 200 });
 				}
 
@@ -268,7 +302,7 @@ export default {
 						`UA: ${userAgent}\n域名: ${url.hostname}\n入口: ${url.pathname + url.search}`
 					);
 
-					const channelConfig = await getchannelConfig(userID, host, userAgent, url, protType);
+					const channelConfig = await getchannelConfig(userID, host, userAgent, url, protType, nat64, hostRemark);
 					const isMozilla = userAgent.includes('mozilla');
 
 					const config = await getCFConfig(CF_EMAIL, CF_KEY, CF_ID);
@@ -323,7 +357,65 @@ export default {
 };
 
 
+/** ---------------------Variable------------------------------ */
+
+/**
+ * Resolves a proxy IP from a URL, raw IP list, or fallback.
+ * 
+ * @param {string|null} PROXYIP - Input could be a URL or a plain IP string. Can be null.
+ * @param {boolean} noTLS - Indicates whether to disable TLS.
+ * @param {string} proxyIpTxt - Default IP source when PROXYIP is not provided.
+ * @param {string[]} fallbackIPs - Optional extra IPs to merge if PROXYIP is null.
+ * @returns {Promise<string|null>} - A randomly selected proxy IP, or null if error occurs.
+ */
+async function resolveProxyIP(PROXYIP, noTLS, proxyIpTxt, fallbackIPs = []) {
+	try {
+		const httpPattern = /^https?:\/\//i;
+		let ipList = [];
+
+		if (PROXYIP) {
+			// Handle URL input (http/https)
+			if (httpPattern.test(PROXYIP)) {
+				const remoteIpList = await addIpText(PROXYIP);
+				const ipUrlTxtAndCsv = PROXYIP.endsWith('.csv')
+					? await getIpUrlTxtAndCsv(noTLS, null, remoteIpList)
+					: await getIpUrlTxtAndCsv(noTLS, remoteIpList, null);
+
+				ipList = [...ipUrlTxtAndCsv.txt, ...ipUrlTxtAndCsv.csv];
+			} else {
+				// Handle plain text input (raw IPs)
+				ipList = await addIpText(PROXYIP);
+			}
+		} else {
+			// No PROXYIP provided, use default
+			const defaultIpList = await addIpText(proxyIpTxt);
+			const ipUrlTxtAndCsv = await getIpUrlTxtAndCsv(noTLS, defaultIpList, null);
+			const formattedIps = ipUrlTxtAndCsv.txt.map(ip => `${tagName}${download}.${ip}`);
+			ipList = [...formattedIps, ...fallbackIPs];
+		}
+
+		// Remove duplicates and pick a random IP
+		const uniqueIps = [...new Set(ipList)];
+		if (uniqueIps.length === 0) {
+			return null;
+		}
+		return uniqueIps[Math.floor(Math.random() * uniqueIps.length)];
+	} catch (error) {
+		console.error('Error while resolving proxy IP:', error);
+		return null;
+	}
+}
+
+
 /** ---------------------Tools------------------------------ */
+
+function log(...args) {
+  if (ENABLE_LOG) console.log(...args);
+}
+
+function error(...args) {
+  if (ENABLE_LOG) console.error(...args);
+}
 
 export async function hashHex_f(string) {
 	const encoder = new TextEncoder();
@@ -508,7 +600,6 @@ function getRandomItems(arr, count) {
 	const shuffled = [...arr].sort(() => 0.5 - Math.random());
 	return shuffled.slice(0, count);
 }
-
 
 // sha256 Hash Algorithm in pure JavaScript
 /**
@@ -1032,6 +1123,159 @@ function getRandomItems(arr, count) {
 	}
 })();
 
+async function resolveDomainToNAT64IPv6(domain) {
+  try {
+    log(`[DNS] Starting domain resolution: ${domain}`);
+
+    const response = await fetch(`${dnsResolver}?name=${domain}&type=A`, {
+      headers: {
+        Accept: "application/dns-json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`DNS request failed with status code: ${response.status}`);
+    }
+
+    const result = await response.json();
+    log(`[DNS] Query result: ${JSON.stringify(result, null, 2)}`);
+
+    const aRecord = result?.Answer?.find(record => record.type === 1 && record.data);
+    if (!aRecord) {
+      throw new Error("No valid A record found");
+    }
+
+    const ipv4 = aRecord.data;
+    log(`[DNS] Found IPv4 address: ${ipv4}`);
+
+    const ipv6 = convertIPv4ToNAT64IPv6(ipv4);
+    log(`[NAT64] Converted IPv6 address: ${ipv6}`);
+
+    return ipv6;
+
+  } catch (err) {
+    error(`[Error] Failed to get NAT64 address: ${err.message}`);
+    throw new Error(`DNS resolution failed: ${err.message}`);
+  }
+}
+
+function convertIPv4ToNAT64IPv6(ipv4Address, options = {}) {
+  const {
+    prefixType = 'custom', // Options: 'standard', 'custom', 'private', 'random', 'manual'
+    withBrackets = true,
+    prefix = '' // Used only when prefixType is 'manual'
+  } = options;
+
+  // Validate and parse IPv4 address
+  const parts = ipv4Address.trim().split('.');
+  if (parts.length !== 4) throw new Error('Invalid IPv4 address');
+  const hexParts = parts.map(part => {
+    const num = Number(part);
+    if (!/^\d+$/.test(part) || isNaN(num) || num < 0 || num > 255) {
+      throw new Error(`Invalid IPv4 segment: ${part}`);
+    }
+    return num.toString(16).padStart(2, '0');
+  });
+
+  // Built-in NAT64 prefixes
+  const predefinedPrefixes = {
+    standard: ['64:ff9b::'],
+    custom: ['2001:67c:2960:6464::'],
+    private: ['fd00:abcd::', 'fd00:1234::'],
+    random: ['64:ff9b::', '2001:67c:2960:6464::', 'fd00:abcd::']
+  };
+
+  // Select prefix
+  let selectedPrefix;
+  if (prefixType === 'manual') {
+    if (!prefix || typeof prefix !== 'string' || !prefix.includes('::')) {
+      throw new Error('Invalid manual prefix; must be a valid IPv6 prefix');
+    }
+    selectedPrefix = prefix;
+  } else if (predefinedPrefixes[prefixType]) {
+    const prefixList = predefinedPrefixes[prefixType];
+    selectedPrefix = prefixList[Math.floor(Math.random() * prefixList.length)];
+  } else {
+    throw new Error(`Unsupported prefixType: ${prefixType}`);
+  }
+
+  // Construct IPv6 suffix
+  const ipv6Tail = `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`.toLowerCase();
+  const fullIPv6 = `${selectedPrefix}${ipv6Tail}`;
+
+  return withBrackets ? `[${fullIPv6}]` : fullIPv6;
+}
+
+/**
+ * Checks whether a hostname matches a domain pattern (supports subdomain matching).
+ * For example:
+ *  - matchesDomainPattern('sub.example.com', 'example.com') => true
+ *  - matchesDomainPattern('example.com', 'example.com') => true
+ *  - matchesDomainPattern('notexample.com', 'example.com') => false
+ *
+ * @param {string} hostname - The hostname or domain to check
+ * @param {string} pattern - The domain pattern to match against (usually the root domain)
+ * @returns {boolean} Whether the hostname matches the pattern
+ */
+function matchesDomainPattern(hostname, pattern) {
+  if (!hostname || !pattern) return false;
+
+  // Normalize to lowercase; domain names are case-insensitive
+  hostname = hostname.toLowerCase();
+  pattern = pattern.toLowerCase();
+
+  // Exclude IP addresses (both IPv4 and IPv6)
+  // IPv4: consists of digits and dots; IPv6: contains colons and may be wrapped in brackets
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  const ipv6Regex = /^\[?([a-f0-9:]+)\]?$/i;
+  if (ipv4Regex.test(hostname) || ipv6Regex.test(hostname)) {
+    return false;
+  }
+
+  const hostParts = hostname.split('.');
+  const patternParts = pattern.split('.');
+
+  if (hostParts.length < patternParts.length) return false;
+
+  // Match segments from right to left; all corresponding segments must match
+  for (let i = 1; i <= patternParts.length; i++) {
+    if (hostParts[hostParts.length - i] !== patternParts[patternParts.length - i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Resolves a domain to a NAT64 IPv6 address if necessary based on configuration.
+ * @param {string} address - The original domain or IP address.
+ * @param {string} addressRemote - The remote domain to be resolved if NAT64 is required.
+ * @param {number} port - The port number (used for logging).
+ * @param {string[]} nat64Domain - List of domains that should go through NAT64.
+ * @param {boolean} nat64 - Flag to determine if NAT64 mode is enabled.
+ * @param {boolean} [forceNAT64=false] - If true, forces NAT64 resolution regardless of domain match.
+ * @returns {Promise<string>} - The original address or resolved NAT64 IPv6 address.
+ */
+async function resolveNAT64IfNeeded(address, addressRemote, port, nat64, forceNAT64 = false) {
+	log(`resolveNAT64IfNeeded: address = ${address}, addressRemote = ${addressRemote}, port = ${port}, nat64 = ${nat64}`);
+	log(`resolveNAT64IfNeeded: proxyDomain = ${proxyDomain}, nat64Domain = ${nat64Domain}`);
+
+	if(proxyDomain.some(domain => matchesDomainPattern(address, domain))){
+		log(`resolveNAT64IfNeeded: proxyIP = ${proxyIP}`);
+		return proxyIP;
+	}
+
+	const shouldUseNAT64 = nat64 && (forceNAT64 || nat64Domain.some(domain => matchesDomainPattern(address, domain)));
+	if (shouldUseNAT64) {
+    	const nat64IP = await resolveDomainToNAT64IPv6(addressRemote);
+    	log(`resolveNAT64IfNeeded Using NAT64 IPv6: nat64IP = ${nat64IP}`);
+    	return nat64IP;
+ 	 }
+
+	return address;
+}
+
 
 /** ---------------------Get data------------------------------ */
 
@@ -1043,7 +1287,7 @@ let subParams = ['sub', 'base64', 'b64', 'clash', 'singbox', 'sb'];
  * @param {string} _url
  * @returns {Promise<string>}
  */
-async function getchannelConfig(userID, host, userAgent, _url, protType) {
+async function getchannelConfig(userID, host, userAgent, _url, protType, nat64, hostRemark) {
 	// console.log(`------------getchannelConfig------------------`);
 	// console.log(`userID: ${userID} \n host: ${host} \n userAgent: ${userAgent} \n _url: ${_url}`);
 
@@ -1057,7 +1301,7 @@ async function getchannelConfig(userID, host, userAgent, _url, protType) {
 		if (!protType) {
 			protType = atob(atob(protTypeBase64));
 		}
-		const [v2ray, clash] = getConfigLink(userID, host, host, port, host, protType);
+		const [v2ray, clash] = getConfigLink(userID, host, host, port, host, protType, nat64);
 		return getHtmlResponse(socks5Enable, userID, host, v2ray, clash);
 	}
 
@@ -1070,7 +1314,7 @@ async function getchannelConfig(userID, host, userAgent, _url, protType) {
 	const ipUrlTxtAndCsv = await getIpUrlTxtAndCsv(noTLS, ipUrlTxt, ipUrlCsv, num);
 
 	// console.log(`txt: ${ipUrlTxtAndCsv.txt} \n csv: ${ipUrlTxtAndCsv.csv}`);
-	let content = await getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxtAndCsv.txt, ipUrlTxtAndCsv.csv, protType);
+	let content = await getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxtAndCsv.txt, ipUrlTxtAndCsv.csv, protType, nat64, hostRemark);
 
 	return _url.pathname === `/${fakeUserID}` ? content : revertFakeInfo(content, userID, host);
 
@@ -1313,12 +1557,16 @@ async function getIpUrlCsv(urlCsvs, tls) {
  * @param {*} remarks 
  * @returns 
  */
-function getConfigLink(uuid, host, address, port, remarks, proxyip, protType) {
+function getConfigLink(uuid, host, address, port, remarks, proxyip, protType, nat64) {
 	const encryption = 'none';
-	let path = `/?ed=2560&PROT_TYPE=${protType}`;
+	let pathParm = `&PROT_TYPE=${protType}`;
 	if (proxyip) {
-		path = `/?ed=2560&PROT_TYPE=${protType}&PROXYIP=${proxyip}`;
+		pathParm = pathParm + `&PROXYIP=${proxyip}`;
 	}
+	if (nat64) {
+		pathParm = pathParm + `&NAT64=${nat64}`;
+	}
+	let path = `/?ed=2560` + pathParm;
 	const fingerprint = 'randomized';
 	let tls = ['tls', true];
 	if (host.includes('.workers.dev') || host.includes('pages.dev')) {
@@ -1519,22 +1767,22 @@ let portSet_https = new Set([443, 8443, 2053, 2096, 2087, 2083]);
  * @param {*} ipUrlCsv 
  * @returns 
  */
-async function getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxt, ipUrlCsv, protType) {
+async function getSubscribeNode(userAgent, _url, host, fakeHostName, fakeUserID, noTLS, ipUrlTxt, ipUrlCsv, protType, nat64, hostRemark) {
 	// Use Set object to remove duplicates
 	const uniqueIpTxt = [...new Set([...ipUrlTxt, ...ipUrlCsv])];
 	let responseBody;
 	if (!protType) {
 		protType = atob(atob(protTypeBase64));
-		const responseBody1 = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType);
+		const responseBody1 = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType, nat64, hostRemark);
 		protType = atob(atob(protTypeBase64Tro));
-		const responseBody2 = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType);
+		const responseBody2 = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType, nat64, hostRemark);
 		responseBody = [responseBody1, responseBody2].join('\n');
 	} else {
-		responseBody = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType);
+		responseBody = splitNodeData(uniqueIpTxt, noTLS, fakeHostName, fakeUserID, userAgent, protType, nat64, hostRemark);
 		responseBody = [responseBody].join('\n');
 	}
 	protType = atob(atob(protTypeBase64));
-	const responseBodyTop = splitNodeData(ipLocal, noTLS, fakeHostName, fakeUserID, userAgent, protType);
+	const responseBodyTop = splitNodeData(ipLocal, noTLS, fakeHostName, fakeUserID, userAgent, protType, nat64, hostRemark);
 	responseBody = [responseBodyTop, responseBody].join('\n');
 	responseBody = btoa(responseBody);
 
@@ -1586,7 +1834,7 @@ function isSingboxCondition(userAgent, _url) {
  * @param {*} uuid 
  * @returns 
  */
-function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent, protType) {
+function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent, protType, nat64, hostRemark) {
 	// Regex to match IPv4 and IPv6
 	// const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
 	const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?([^@#]*)@?(.*)?$/;
@@ -1614,7 +1862,7 @@ function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent, protType) {
 		if (match && !ipTxt.includes('@am_clubs')) {
 			address = match[1];
 			port = match[2] || port;
-			remarks = match[3] || address || host;
+			remarks = hostRemark?host:(match[3] || address || host);
 			proxyip = match[4] || '';
 			// console.log(`splitNodeData--match-> \n address: ${address} \n port: ${port} \n remarks: ${remarks} \n proxyip: ${proxyip}`);
 		} else {
@@ -1638,7 +1886,7 @@ function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent, protType) {
 
 			address = ip;
 			port = newPort || port;
-			remarks = extra || address || host;
+			remarks = hostRemark?host:(extra || address || host);
 			// console.log(`splitNodeData---> \n address: ${address} \n port: ${port} \n remarks: ${remarks} \n proxyip: ${proxyip}`);
 		}
 
@@ -1650,7 +1898,7 @@ function splitNodeData(uniqueIpTxt, noTLS, host, uuid, userAgent, protType) {
 			return null; // Skip this iteration
 		}
 
-		const [v2ray, clash] = getConfigLink(uuid, host, address, port, remarks, proxyip, protType);
+		const [v2ray, clash] = getConfigLink(uuid, host, address, port, remarks, proxyip, protType, nat64);
 		return v2ray;
 	}).filter(Boolean).join('\n');
 
@@ -2173,6 +2421,9 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 	 * @returns {Promise<import("@cloudflare/workers-types").Socket>} A Promise that resolves to the connected socket.
 	 */
 	async function connectAndWrite(address, port, socks = false) {
+		//
+		address = await resolveNAT64IfNeeded(address,addressRemote,port,nat64);
+
 		/** @type {import("@cloudflare/workers-types").Socket} */
 		const tcpSocket = socks ? await socks5Connect(addressType, address, port, log)
 			: connect({
@@ -2192,9 +2443,16 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 	 * @returns {Promise<void>} A Promise that resolves when the retry is complete.
 	 */
 	async function retry() {
-		const tcpSocket = socks5Enable ? await connectAndWrite(addressRemote, portRemote, true) : await connectAndWrite(proxyIP || addressRemote, proxyPort || portRemote);
+		//
+		const resolvedTarget = await resolveNAT64IfNeeded(proxyIP,addressRemote,portRemote,nat64,true);
+		const finalTargetHost = resolvedTarget || addressRemote;
+		const finalTargetPort = proxyPort || portRemote;
 
-		console.log(`retry-${socks5Enable} connected to ${addressRemote}:${portRemote}`);
+		const tcpSocket = socks5Enable 
+			? await connectAndWrite(addressRemote, portRemote, true) 
+			: await connectAndWrite(finalTargetHost, finalTargetPort);
+
+		log(`retry-${socks5Enable} connected to ${addressRemote}:${portRemote}`);
 		tcpSocket.closed.catch(error => {
 			console.log('retry tcpSocket closed error', error);
 		}).finally(() => {
@@ -2296,7 +2554,7 @@ function processchannelHeader(channelBuffer, userID) {
 	// isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim());
 	isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim()) || uuids.length === 1 && slicedBufferString === uuids[0].trim();
 
-	console.log(`userID: ${slicedBufferString}`);
+	//console.log(`userID: ${slicedBufferString}`);
 
 	if (!isValidUser) {
 		return {
@@ -2721,15 +2979,15 @@ async function socks5Connect(ipType, remoteIp, remotePort, log) {
 	const sendSocksGreeting = async () => {
 		const greeting = new Uint8Array([5, 2, 0, 2]);
 		await writer.write(greeting);
-		console.log('SOCKS5 greeting sent');
+		//console.log('SOCKS5 greeting sent');
 	};
 
 	const handleAuthResponse = async () => {
 		const res = (await reader.read()).value;
 		if (res[1] === 0x02) {
-			console.log("SOCKS5 server requires authentication");
+			//console.log("SOCKS5 server requires authentication");
 			if (!username || !password) {
-				console.log("Please provide username and password");
+				//console.log("Please provide username and password");
 				throw new Error("Authentication required");
 			}
 			const authRequest = new Uint8Array([
@@ -2739,7 +2997,7 @@ async function socks5Connect(ipType, remoteIp, remotePort, log) {
 			await writer.write(authRequest);
 			const authResponse = (await reader.read()).value;
 			if (authResponse[0] !== 0x01 || authResponse[1] !== 0x00) {
-				console.log("SOCKS5 server authentication failed");
+				//console.log("SOCKS5 server authentication failed");
 				throw new Error("Authentication failed");
 			}
 		}
@@ -2760,19 +3018,19 @@ async function socks5Connect(ipType, remoteIp, remotePort, log) {
 				])]);
 				break;
 			default:
-				console.log(`Invalid address type: ${ipType}`);
+				//console.log(`Invalid address type: ${ipType}`);
 				throw new Error("Invalid address type");
 		}
 		const socksRequest = new Uint8Array([5, 1, 0, ...DSTADDR, remotePort >> 8, remotePort & 0xff]);
 		await writer.write(socksRequest);
-		console.log('SOCKS5 request sent');
+		//console.log('SOCKS5 request sent');
 
 		const response = (await reader.read()).value;
 		if (response[1] !== 0x00) {
-			console.log("SOCKS5 connection failed");
+			//console.log("SOCKS5 connection failed");
 			throw new Error("Connection failed");
 		}
-		console.log("SOCKS5 connection established");
+		//console.log("SOCKS5 connection established");
 	};
 
 	try {
